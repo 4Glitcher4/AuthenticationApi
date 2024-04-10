@@ -23,22 +23,19 @@ namespace AuthenticationApi.Services
             _userService = userService;
         }
 
-        public async Task GenerateDigitalSignature()
+        public async Task GenerateDigitalSignature(string signatureData)
         {
             try
             {
-                // Загружаем PEM-ключи
                 var (publicKey, privateKey) = LoadPem();
 
-                // Подписываем данные
-                string dataToSign = "Hello, World!";
-                byte[] signature = SignData(Encoding.UTF8.GetBytes(dataToSign), privateKey);
+                byte[] signature = SignData(Encoding.UTF8.GetBytes(signatureData), privateKey);
 
-                Console.WriteLine("Данные: " + dataToSign);
+                Console.WriteLine("Данные: " + signatureData);
                 Console.WriteLine("Подпись: " + Convert.ToBase64String(signature));
 
                 // Проверяем подпись
-                bool isVerified = VerifyData(Encoding.UTF8.GetBytes(dataToSign), signature, publicKey);
+                bool isVerified = VerifyData(Encoding.UTF8.GetBytes(signatureData), signature, publicKey);
                 Console.WriteLine("Подпись верифицирована: " + isVerified);
             }
             catch (Exception e)

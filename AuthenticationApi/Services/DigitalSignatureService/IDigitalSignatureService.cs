@@ -2,7 +2,7 @@
 {
     public interface IDigitalSignatureService
     {
-        Task GenerateDigitalSignature();
+        Task GenerateDigitalSignature(string signature);
         Task<bool> ValidateDigitalSignature();
     }
 }
