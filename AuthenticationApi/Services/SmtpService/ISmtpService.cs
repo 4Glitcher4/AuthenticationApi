@@ -1,8 +1,9 @@
-﻿namespace AuthenticationApi.Services
+﻿using AuthenticationApi.ModelsDto;
+
+namespace AuthenticationApi.Services
 {
     public interface ISmtpService
     {
-        Task SendRegister();
-        Task SendResetPassword();
+        bool Send(string url, SendDto smtp);
     }
 }

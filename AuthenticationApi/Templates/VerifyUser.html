@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Подтвержения почты</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+            body div {
+                align-items: center;
+                justify-content: center;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+        div h1 {
+            font-size: 36px;
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <img src="https://lis.4dev.kz/anon/MShzAJTjUU.png"
+             alt="Guester Logo"
+             width="55px"
+             style="margin-top: 20px" />
+        <h1>Здравствуйте, %HANDLE%!</h1>
+        <p style="font-size: 26px">
+            Перейдите по ссылке чтобы подтвердить ваш аккаунт
+        </p>
+        <a style="font-size: 26px" href="%URL%">Нажмите чтобы подтвердить</a>
+    </div>
+</body>
+</html>
