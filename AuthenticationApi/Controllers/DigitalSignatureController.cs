@@ -32,7 +32,7 @@ namespace AuthenticationApi.Controllers
             {
                 var profile = await _profileRepository.FindOneAsync(doc => doc.UserId == ObjectId.Parse(_userService.GetClaimValue(ClaimType.UserId)));
                 if (string.IsNullOrWhiteSpace(profile.UserIdentity))
-                    return BadRequest(nameof(profile.UserIdentity) + " can't be empty.");
+                    return BadRequest(nameof(profile.UserIdentity) + " не должен быть пустям.");
 
                 var (signature, certificateBytes) = await _digitalSignatureService.GenerateSignature(profile);
                 profile.Signature = signature;

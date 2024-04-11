@@ -82,7 +82,7 @@ namespace AuthenticationApi.Controllers
             {
                 var user = await _userRepository.FindOneAsync(doc => doc.Email == userDto.Email);
                 if (user == null)
-                    return NotFound(user.GetType().Name + " not found.");
+                    return NotFound(user.GetType().Name + " не найден.");
                 if (_userService.Encrypt(userDto.Password) != user.Password)
                     return BadRequest();
 
