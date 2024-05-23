@@ -28,7 +28,7 @@ namespace AuthenticationApi.Controllers
         {
             try
             {
-                return Ok(_profileRepository.FindById(ObjectId.Parse(_userService.GetClaimValue(ClaimType.UserId))));
+                return Ok(_profileRepository.FindOne(doc => doc.UserId == ObjectId.Parse(_userService.GetClaimValue(ClaimType.UserId))));
             }
             catch (Exception ex)
             {
