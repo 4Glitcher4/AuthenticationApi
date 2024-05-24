@@ -29,7 +29,7 @@ namespace AuthenticationApi.Controllers
         }
 
         [HttpPost("Register")]
-        public async Task<IActionResult> Register(UserDto userDto)
+        public async Task<IActionResult> Register(UserRegisterDto userDto)
         {
             try
             {
