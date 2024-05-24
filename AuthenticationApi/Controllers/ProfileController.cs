@@ -43,8 +43,8 @@ namespace AuthenticationApi.Controllers
             if (profile == null)
                 return NotFound(profile.GetType().Name + " not found.");
 
-            profile.FirstName = profilePutDto.Name ?? profile.FirstName;
-            profile.LastName = profilePutDto.Name ?? profile.LastName;
+            profile.FirstName = profilePutDto.FirstName ?? profile.FirstName;
+            profile.LastName = profilePutDto.LastName ?? profile.LastName;
             profile.Description = profilePutDto.Description ?? profile.Description;
             profile.UserIdentity = profilePutDto.UserIdentity ?? profile.UserIdentity;
 
