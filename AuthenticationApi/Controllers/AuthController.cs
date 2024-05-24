@@ -15,17 +15,19 @@ namespace AuthenticationApi.Controllers
         private readonly IMongoRepository<Profile> _profileRepository;
         private readonly IUserService _userService;
         private readonly ISmtpService _smtpService;
+        private readonly IDigitalSignatureService _digitalSignatureService;
 
         public AuthController(IMongoRepository<User> userRepository,
             IMongoRepository<Profile> profileRepository,
             IUserService userService,
-            ISmtpService smtpService)
+            ISmtpService smtpService,
+            IDigitalSignatureService digitalSignatureService)
         {
             _userRepository = userRepository;
             _profileRepository = profileRepository;
             _userService = userService;
             _smtpService = smtpService;
-
+            _digitalSignatureService = digitalSignatureService;
         }
 
         [HttpPost("Register")]
@@ -100,6 +102,51 @@ namespace AuthenticationApi.Controllers
                         TokenLifeTime = DateTime.Now.AddDays(5),
                     })
                 });
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("DigitalSignatureLogin")]
+        public async Task<IActionResult> DigitalSignatureLogin(IFormFile certificateFile)
+        {
+            try
+            {
+                if (certificateFile == null || certificateFile.Length == 0)
+                    return BadRequest("Файл не был загружен.");
+
+                var profile = await _profileRepository.FindOneAsync(doc => doc.UserId == ObjectId.Parse(_userService.GetClaimValue(ClaimType.UserId)));
+
+                // Считываем содержимое загруженного файла
+                using (var memoryStream = new MemoryStream())
+                {
+                    await certificateFile.CopyToAsync(memoryStream);
+                    byte[] certificateBytes = memoryStream.ToArray();
+
+                    // Далее используем сертификат для верификации подписи
+                    bool isSignatureValid = await _digitalSignatureService.VerifySignature(certificateBytes);
+
+                    if (!isSignatureValid)
+                        return BadRequest();
+
+                    // Возвращаем сообщение о успешной верификации
+                    return Ok(new
+                    {
+                        accessToken = _userService.CreateToken(new TokenSettings
+                        {
+                            UserId = profile.UserId.ToString(),
+                            TokenLifeTime = DateTime.Now.AddDays(1),
+                        }),
+                        refreshToken = _userService.CreateToken(new TokenSettings
+                        {
+                            UserId = profile.UserId.ToString(),
+                            TokenLifeTime = DateTime.Now.AddDays(5),
+                        })
+                    });
+                }
             }
             catch (Exception ex)
             {
