@@ -38,7 +38,7 @@ namespace AuthenticationApi.Controllers
         [HttpPut]
         public IActionResult Put(ProfilePutDto profilePutDto)
         {
-            var profile = _profileRepository.FindById(ObjectId.Parse(_userService.GetClaimValue(ClaimType.UserId)));
+            var profile = _profileRepository.FindOne(doc => doc.UserId == ObjectId.Parse(_userService.GetClaimValue(ClaimType.UserId)));
 
             if (profile == null)
                 return NotFound(profile.GetType().Name + " not found.");
