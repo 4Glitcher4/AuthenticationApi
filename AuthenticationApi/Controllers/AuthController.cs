@@ -45,7 +45,8 @@ namespace AuthenticationApi.Controllers
 
                 var profile = new Profile
                 {
-                    Name = "",
+                    FirstName = userDto.FirstName,
+                    LastName = userDto.LastName,
                     Description = "",
                     UserId = user.Id,
                     IsVerify = false,
