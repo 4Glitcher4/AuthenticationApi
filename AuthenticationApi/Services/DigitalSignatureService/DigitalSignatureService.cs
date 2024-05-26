@@ -40,9 +40,9 @@ namespace AuthenticationApi.Services
                 // Создаем подпись для данных
                 string signature = GenerateSignature(userProfile.UserIdentity);
 
-                string certificatePassword = _userService.Decrypt(user.Password); // Пароль для защиты файла PKCS#12
+                //string certificatePassword = _userService.Decrypt(user.Password); // Пароль для защиты файла PKCS#12
 
-                return (signature, SaveCertificateToFile(certificate, certificatePassword));
+                return (signature, ConverToBytes(certificate));
 
             }
             catch (Exception)
@@ -59,7 +59,7 @@ namespace AuthenticationApi.Services
             var user = await _userRepository.FindOneAsync(doc => doc.Id == ObjectId.Parse(_userService.GetClaimValue(ClaimType.UserId)));
             var userProfile = await _profileRepository.FindOneAsync(doc => doc.UserId == ObjectId.Parse(_userService.GetClaimValue(ClaimType.UserId)));
 
-            var certificate = new X509Certificate2(certificateBytes, _userService.Decrypt(user.Password));
+            var certificate = new X509Certificate2(certificateBytes);
 
             // Преобразуем подпись из Base64 обратно в массив байтов
             byte[] signatureBytes = Convert.FromBase64String(userProfile.Signature);
@@ -89,6 +89,39 @@ namespace AuthenticationApi.Services
             }
         }
 
+        public async Task<(bool, string)> VerifyLoginSignature(byte[] certificateBytes)
+        {
+            var certificate = new X509Certificate2(certificateBytes);
+
+            var userProfile = await _profileRepository.FindOneAsync(doc => doc.UserId == ObjectId.Parse(certificate.Issuer.Replace("CN=", "")));
+            // Преобразуем подпись из Base64 обратно в массив байтов
+            byte[] signatureBytes = Convert.FromBase64String(userProfile.Signature);
+
+            try
+            {
+                // Получаем открытый ключ сертификата
+                RSA rsa = certificate.GetRSAPublicKey();
+
+                // Преобразуем данные в массив байтов
+                byte[] dataBytes = Encoding.UTF8.GetBytes(userProfile.UserIdentity);
+
+                // Вычисляем хэш от данных
+                byte[] hashBytes;
+                using (var sha256 = SHA256.Create())
+                {
+                    hashBytes = sha256.ComputeHash(dataBytes);
+                }
+
+                // Проверяем подпись
+                return (rsa.VerifyHash(hashBytes, signatureBytes, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1), userProfile.UserId.ToString());
+            }
+            catch (CryptographicException)
+            {
+                // В случае ошибки при верификации возвращаем false
+                return (false, "");
+            }
+        }
+
         private X509Certificate2 GenerateCertificate(string subjectName)
         {
             // Создаем запрос на сертификат
@@ -100,12 +133,12 @@ namespace AuthenticationApi.Services
             return certificate;
         }
 
-        private byte[] SaveCertificateToFile(X509Certificate2 certificate, string password)
+        private byte[] ConverToBytes(X509Certificate2 certificate)
         {
             try
             {
                 // Возвращаем массив байтов сертификатв формата PKCS#12
-                return certificate.Export(X509ContentType.Pkcs12, password);
+                return certificate.Export(X509ContentType.Pkcs12);
             }
             catch (Exception)
             {

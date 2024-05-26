@@ -118,8 +118,6 @@ namespace AuthenticationApi.Controllers
                 if (certificateFile == null || certificateFile.Length == 0)
                     return BadRequest("Файл не был загружен.");
 
-                var profile = await _profileRepository.FindOneAsync(doc => doc.UserId == ObjectId.Parse(_userService.GetClaimValue(ClaimType.UserId)));
-
                 // Считываем содержимое загруженного файла
                 using (var memoryStream = new MemoryStream())
                 {
@@ -127,10 +125,12 @@ namespace AuthenticationApi.Controllers
                     byte[] certificateBytes = memoryStream.ToArray();
 
                     // Далее используем сертификат для верификации подписи
-                    bool isSignatureValid = await _digitalSignatureService.VerifySignature(certificateBytes);
+                    var (isSignatureValid, userId) = await _digitalSignatureService.VerifyLoginSignature(certificateBytes);
 
                     if (!isSignatureValid)
                         return BadRequest();
+
+                    var profile = await _profileRepository.FindOneAsync(doc => doc.UserId == ObjectId.Parse(userId));
 
                     // Возвращаем сообщение о успешной верификации
                     return Ok(new

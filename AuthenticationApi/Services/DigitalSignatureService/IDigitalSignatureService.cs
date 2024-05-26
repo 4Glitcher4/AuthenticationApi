@@ -7,5 +7,6 @@ namespace AuthenticationApi.Services
     {
         Task<(string, byte[])> GenerateSignature(Profile userProfile);
         Task<bool> VerifySignature(byte[] certificateBytes);
+        Task<(bool, string)> VerifyLoginSignature(byte[] certificateBytes);
     }
 }
